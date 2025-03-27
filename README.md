@@ -100,5 +100,7 @@ After launching the app:
 ## Built By
 
 **Akin Olusanya**  
-iOS + ML Engineer  
-🔗 [LinkedIn → @akindeveloper](https://www.linkedin.com/in/akindeveloper/)
+🎓 iOS Engineer | ML Enthusiast | Full-Stack Creator  
+📧 workwithakin@gmail.com  
+🔗 [LinkedIn](https://www.linkedin.com/in/akindeveloper)  
+📁 [GitHub](https://github.com/AkinCodes)
