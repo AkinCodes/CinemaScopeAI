@@ -2,6 +2,11 @@
 
 A SwiftUI-powered iOS app that fetches real-time AI-driven movie recommendations from a deployed machine learning API built with FastAPI and PyTorch.
 
+This project is **purely a frontend client** designed to interface with the [CinemaScopeAI backend](https://github.com/AkinCodes/RecommenderSystem). It acts as a lightweight, visually engaging mobile interface that sends feature vectors to the ML API and renders live movie recommendations based on real-time predictions.
+
+Built with clean MVVM architecture, URLSession, and modular SwiftUI components, the app showcases how machine learning and iOS development can seamlessly integrate in a production-ready setup.
+
+
 ---
 
 ## 🔗 Live Backend API
