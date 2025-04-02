@@ -6,27 +6,42 @@ struct CinemScopeAIDetailView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
-                // Movie Poster
-                AsyncImage(url: URL(string: movie.poster_url ?? "")) { image in
-                    image.resizable().aspectRatio(contentMode: .fill)
-                } placeholder: {
-                    ProgressView()
+                AsyncImage(url: URL(string: movie.poster_url ?? "")) { phase in
+                    switch phase {
+                    case .empty:
+                        ProgressView()
+                    case .success(let image):
+                        image
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                    case .failure(_):
+                        Image(systemName: "film.fill")
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .foregroundColor(.gray)
+                            .padding(20)
+                    @unknown default:
+                        Image(systemName: "film.fill")
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .foregroundColor(.gray)
+                            .padding(20)
+                    }
                 }
-                .frame(height: 400)
-                .clipShape(RoundedRectangle(cornerRadius: 12))
-                .shadow(radius: 10)
+                .frame(width: 80, height: 120)
+                .background(Color(UIColor.systemGray6))
+                .cornerRadius(8)
                 
-                // Movie Title
                 Text(movie.title)
                     .font(.largeTitle)
                     .fontWeight(.bold)
                 
                 // Genre, Director, Release Year
                 VStack(alignment: .leading, spacing: 5) {
-                    Text("🎭 Genre: \(movie.genre)")
-                    Text("🎬 Directed by: \(movie.director)")
-                    Text("📅 Released: \(movie.release_year)")
-                    Text("⭐ Score: \(String(format: "%.1f", movie.score * 10))/10")
+                    Text("Genre: \(movie.genre)")
+                    Text("Directed by: \(movie.director)")
+                    Text("Released: \(movie.release_year)")
+                    Text("Score: \(String(format: "%.1f", movie.score * 10))/10")
                 }
                 .font(.subheadline)
                 .foregroundColor(.gray)

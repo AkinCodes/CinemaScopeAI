@@ -4,7 +4,7 @@ import SwiftUI
 struct CinemaScopeAIApp: App {
     var body: some Scene {
         WindowGroup {
-            CinemaScopeAIView()
+            ViewModelSwitcherView()
         }
     }
 }
