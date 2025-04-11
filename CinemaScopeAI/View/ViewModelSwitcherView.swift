@@ -17,7 +17,7 @@ struct ViewModelSwitcherView: View {
                 if selectedMode == .manual {
                     CinemaScopeAIView() // Recommender view
                 } else {
-                    CinemaScopeGPTView() // GPT prompt view
+                    GPTChatView() // GPT prompt view
                 }
             }
             .navigationTitle("🎬 CinemaScopeAI")

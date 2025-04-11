@@ -1,7 +1,7 @@
 import SwiftUI
 
-struct CinemaScopeGPTView: View {
-    @StateObject private var viewModel = ChatViewModel()
+struct GPTChatView: View {
+    @StateObject private var viewModel = GPTChatViewModel()
 
     var body: some View {
         NavigationView {
