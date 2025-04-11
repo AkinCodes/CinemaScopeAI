@@ -29,3 +29,7 @@ enum InputMode: String, CaseIterable {
     case manual = "Manual"
     case gpt = "GPT"
 }
+
+#Preview {
+    ViewModelSwitcherView()
+}
