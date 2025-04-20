@@ -156,7 +156,7 @@ https://github.com/user-attachments/assets/09c49cf9-cc31-4fdf-aa6e-49573a228279
 ## Built By
 
 **Akin Olusanya**  
-iOS Engineer | ML Enthusiast | Full-Stack Creator  
+iOS Engineer | ML Engineer | Full-Stack Creator  
 workwithakin@gmail.com  
 [LinkedIn](https://www.linkedin.com/in/akindeveloper)  
 [GitHub](https://github.com/AkinCodes)
