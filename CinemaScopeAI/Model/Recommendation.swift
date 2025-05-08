@@ -1,7 +1,8 @@
 import Foundation
 
 struct Recommendation: Identifiable, Codable {
-    let id = UUID()
+    var id: String { title + String(release_year) } 
+    
     let title: String
     let genre: String
     let rating: String
@@ -14,7 +15,7 @@ struct Recommendation: Identifiable, Codable {
     enum CodingKeys: String, CodingKey {
         case title, genre, rating, score, poster_url, director, release_year, summary
     }
-    
+
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         title = try container.decode(String.self, forKey: .title)
@@ -22,7 +23,7 @@ struct Recommendation: Identifiable, Codable {
         rating = try container.decode(String.self, forKey: .rating)
         
         let rawScore = try container.decode(Double.self, forKey: .score)
-        score = rawScore.isFinite ? rawScore : 0.0 
+        score = rawScore.isFinite ? rawScore : 0.0
         
         poster_url = try? container.decodeIfPresent(String.self, forKey: .poster_url)
         director = try container.decode(String.self, forKey: .director)
@@ -34,5 +35,3 @@ struct Recommendation: Identifiable, Codable {
 struct RecommendationResponse: Codable {
     let recommendations: [Recommendation]
 }
-
-
