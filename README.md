@@ -4,7 +4,7 @@
 [![Swift](https://img.shields.io/badge/Swift-5.9-orange?logo=swift)](https://swift.org)
 [![SwiftUI](https://img.shields.io/badge/UI-SwiftUI-blue?logo=swift)](https://developer.apple.com/swiftui/)
 [![Architecture](https://img.shields.io/badge/Architecture-MVVM-green)](https://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93viewmodel)
-[![Backend](https://img.shields.io/badge/Backend-Live_on_Render-purple)](https://cinemascope-api.onrender.com)
+[![Backend](https://img.shields.io/badge/Backend-Live_on_Render-purple)](https://recommendersystem-l993.onrender.com)
 [![License](https://img.shields.io/badge/License-MIT-lightgrey)](LICENSE)
 [![No Dependencies](https://img.shields.io/badge/Dependencies-Zero-brightgreen)]()
 
@@ -22,7 +22,7 @@ An iOS app with two different ways to get movie recommendations. **Form mode** t
 The backend is live. You can hit it from your terminal without cloning anything:
 
 ```bash
-curl -X POST https://cinemascope-api.onrender.com/predict/ \
+curl -X POST https://recommendersystem-l993.onrender.com/predict/ \
   -H "Content-Type: application/json" \
   -d '{"release_year": 2010, "duration_text": "120", "type": "Movie", "rating": "PG-13"}'
 ```
@@ -210,7 +210,7 @@ CinemaScopeAI/
 
 The form mode connects to a **FastAPI** server running a **PyTorch** deep learning model. The model was trained on the [MovieLens](https://grouplens.org/datasets/movielens/) dataset to learn patterns between user preferences and movie attributes.
 
-**Live URL:** [https://cinemascope-api.onrender.com](https://cinemascope-api.onrender.com)
+**Live URL:** [https://recommendersystem-l993.onrender.com](https://recommendersystem-l993.onrender.com)
 
 The app sends a POST to `/predict/` with a JSON body like:
 
