@@ -55,12 +55,16 @@ class CinemaScopeAIViewModel {
             $0.replacingOccurrences(of: "-", with: "").uppercased() == cleanedRating
         }) ?? "PG"
 
-        // --- Build Payload ---
+        // --- Build Payload (new MovieLens-trained API format) ---
+        // Convert user inputs into continuous features (normalized 0-1) and categorical features (user_id, item_id)
+        let normalizedYear = Double(year - 1900) / 130.0  // rough normalize
+        let normalizedDuration = (Double(finalDuration) ?? 90.0) / 200.0
+        let typeIndex = matchedType == "Movie" ? 0 : 1
+        let ratingIndex = min(allowedRatings.firstIndex(of: matchedRating) ?? 0, 17)
+
         let payload: [String: Any] = [
-            "release_year": year,
-            "duration_text": finalDuration,
-            "type": matchedType,
-            "rating": matchedRating
+            "continuous_features": [normalizedYear, normalizedDuration],
+            "categorical_features": [typeIndex, ratingIndex]
         ]
 
         lastPayload = payload

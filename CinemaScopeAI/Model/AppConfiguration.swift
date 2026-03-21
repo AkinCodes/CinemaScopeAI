@@ -2,7 +2,7 @@ import Foundation
 
 enum AppConfiguration {
     static let cinemaBaseURL: URL = {
-        guard let url = URL(string: "https://cinemascope-api.onrender.com") else {
+        guard let url = URL(string: "https://recommendersystem-l993.onrender.com") else {
             fatalError("Invalid cinema base URL configuration")
         }
         return url

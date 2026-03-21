@@ -11,8 +11,8 @@
 An iOS app with two different ways to get movie recommendations. **Form mode** talks to a deep learning backend I trained and deployed myself. **Chat mode** lets you describe what you want in plain English and gets picks from OpenAI. Both show posters, ratings, plot summaries, and full detail views — no third-party iOS libraries anywhere.
 
 <p align="center">
-<img src="https://github.com/user-attachments/assets/d47ece97-8548-4fff-bb13-4732793e61c0" width="300" />
-<img src="https://github.com/user-attachments/assets/0fc556dd-65b4-49c9-8d13-d21c9c02572a" width="300" />
+<img src="https://github.com/user-attachments/assets/ab4f9e4d-72ea-48af-9024-90f604579643" width="300" />
+<img src="https://github.com/user-attachments/assets/32a328df-a6fb-40ab-add4-f1281dd23864" width="300" />
 </p>
 
 ---

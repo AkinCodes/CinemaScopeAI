@@ -39,15 +39,22 @@ final class CinemaScopeAIService: MovieRecommendationServiceProtocol, Sendable {
         }
 
         do {
-            let decoded = try JSONDecoder().decode([String: [Recommendation]].self, from: data)
-            guard let recommendations = decoded["recommendations"] else {
-                throw CinemaScopeError.invalidResponse
-            }
+            // Try new format first (flat array from MovieLens API)
+            let recommendations = try JSONDecoder().decode([Recommendation].self, from: data)
             return recommendations
-        } catch let error as CinemaScopeError {
-            throw error
         } catch {
-            throw CinemaScopeError.decodingError(underlying: error)
+            // Fall back to old format (wrapped in {"recommendations": [...]})
+            do {
+                let decoded = try JSONDecoder().decode([String: [Recommendation]].self, from: data)
+                guard let recommendations = decoded["recommendations"] else {
+                    throw CinemaScopeError.invalidResponse
+                }
+                return recommendations
+            } catch let error as CinemaScopeError {
+                throw error
+            } catch {
+                throw CinemaScopeError.decodingError(underlying: error)
+            }
         }
     }
 }
