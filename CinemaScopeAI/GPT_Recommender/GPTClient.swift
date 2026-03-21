@@ -1,15 +1,19 @@
 import Foundation
 
-actor GPTClient {
-    private let endpoint = "https://api.openai.com/v1/chat/completions"
+actor GPTClient: GPTServiceProtocol {
+    nonisolated let endpoint: String
 
-    func fetchRecommendations(prompt: String) async throws -> RecommendationResponse {
+    init(endpoint: String = AppConfiguration.openAIBaseURL) {
+        self.endpoint = endpoint
+    }
+
+    nonisolated func fetchRecommendations(prompt: String) async throws -> RecommendationResponse {
         guard let apiKey = ProcessInfo.processInfo.environment["OPENAI_API_KEY"] else {
-            throw NSError(domain: "API Key not found", code: 1)
+            throw CinemaScopeError.apiError("API Key not found. Set the OPENAI_API_KEY environment variable.")
         }
 
         guard let url = URL(string: endpoint) else {
-            throw URLError(.badURL)
+            throw CinemaScopeError.invalidResponse
         }
 
         var request = URLRequest(url: url)
@@ -23,30 +27,39 @@ actor GPTClient {
         ]
 
         let body: [String: Any] = [
-            "model": "gpt-3.5-turbo",
+            "model": AppConfiguration.openAIModel,
             "messages": messages
         ]
 
         request.httpBody = try JSONSerialization.data(withJSONObject: body)
 
-        let (data, _) = try await URLSession.shared.data(for: request)
+        let data: Data
+        do {
+            (data, _) = try await URLSession.shared.data(for: request)
+        } catch {
+            throw CinemaScopeError.networkError(underlying: error)
+        }
 
         guard let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
               let choices = json["choices"] as? [[String: Any]],
               let message = choices.first?["message"] as? [String: Any],
               let content = message["content"] as? String else {
-            throw NSError(domain: "Invalid response format", code: 2)
+            throw CinemaScopeError.invalidResponse
         }
 
         guard let extracted = extractJSON(from: content) else {
-            throw NSError(domain: "Failed to extract JSON", code: 3)
+            throw CinemaScopeError.invalidResponse
         }
 
         let jsonData = Data(extracted.utf8)
-        return try JSONDecoder().decode(RecommendationResponse.self, from: jsonData)
+        do {
+            return try JSONDecoder().decode(RecommendationResponse.self, from: jsonData)
+        } catch {
+            throw CinemaScopeError.decodingError(underlying: error)
+        }
     }
 
-    private func extractJSON(from text: String) -> String? {
+    private nonisolated func extractJSON(from text: String) -> String? {
         guard let startIndex = text.firstIndex(of: "{"),
               let endIndex = text.lastIndex(of: "}") else {
             return nil
@@ -54,4 +67,3 @@ actor GPTClient {
         return String(text[startIndex...endIndex])
     }
 }
-

@@ -1,53 +1,53 @@
 import Foundation
 
-class CinemaScopeAIService {
+final class CinemaScopeAIService: MovieRecommendationServiceProtocol, Sendable {
     static let shared = CinemaScopeAIService()
-    private let baseURL = URL(string: "https://cinemascope-api.onrender.com")!
-    
-    func fetchRecommendations(with input: [String: Any], completion: @escaping ([Recommendation]?) -> Void) {
+
+    private let baseURL: URL
+
+    init(baseURL: URL = AppConfiguration.cinemaBaseURL) {
+        self.baseURL = baseURL
+    }
+
+    func fetchRecommendations(with input: [String: Any]) async throws -> [Recommendation] {
         let endpoint = baseURL.appendingPathComponent("predict/")
         var request = URLRequest(url: endpoint)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
 
-        print("🟢 Sending request to: \(endpoint)")
-        print("🟢 Request payload: \(input)")
-
         do {
             request.httpBody = try JSONSerialization.data(withJSONObject: input, options: [])
         } catch {
-            print("❌ Failed to encode request body: \(error)")
-            completion(nil)
-            return
+            throw CinemaScopeError.decodingError(underlying: error)
         }
 
-        URLSession.shared.dataTask(with: request) { data, response, error in
-            // Handle no data
-            guard let data = data else {
-                print("❌ No data received: \(error?.localizedDescription ?? "Unknown error")")
-                completion(nil)
-                return
-            }
+        let data: Data
+        let response: URLResponse
+        do {
+            (data, response) = try await URLSession.shared.data(for: request)
+        } catch {
+            throw CinemaScopeError.networkError(underlying: error)
+        }
 
-            // Log HTTP response code
-            if let httpResponse = response as? HTTPURLResponse {
-                print("📡 HTTP Status: \(httpResponse.statusCode)")
-            }
+        if let httpResponse = response as? HTTPURLResponse,
+           !(200...299).contains(httpResponse.statusCode) {
+            throw CinemaScopeError.apiError("HTTP \(httpResponse.statusCode)")
+        }
 
-            // Print raw server response
-            if let rawJSON = String(data: data, encoding: .utf8) {
-                print("📈 Raw JSON response:\n\(rawJSON)")
-            }
+        guard !data.isEmpty else {
+            throw CinemaScopeError.noData
+        }
 
-            do {
-                let decoded = try JSONDecoder().decode([String: [Recommendation]].self, from: data)
-                print("✅ Successfully decoded \(decoded["recommendations"]?.count ?? 0) recommendations.")
-                completion(decoded["recommendations"])
-            } catch {
-                print("❌ Failed to decode response: \(error)")
-                completion(nil)
+        do {
+            let decoded = try JSONDecoder().decode([String: [Recommendation]].self, from: data)
+            guard let recommendations = decoded["recommendations"] else {
+                throw CinemaScopeError.invalidResponse
             }
-
-        }.resume()
+            return recommendations
+        } catch let error as CinemaScopeError {
+            throw error
+        } catch {
+            throw CinemaScopeError.decodingError(underlying: error)
+        }
     }
 }

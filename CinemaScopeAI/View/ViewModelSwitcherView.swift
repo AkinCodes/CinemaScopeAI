@@ -4,7 +4,7 @@ struct ViewModelSwitcherView: View {
     @State private var selectedMode: InputMode = .manual
 
     var body: some View {
-        NavigationView {
+        NavigationStack {
             VStack {
                 Picker("Mode", selection: $selectedMode) {
                     ForEach(InputMode.allCases, id: \.self) { mode in
@@ -13,14 +13,31 @@ struct ViewModelSwitcherView: View {
                 }
                 .pickerStyle(SegmentedPickerStyle())
                 .padding()
+                .accessibilityLabel("Recommendation mode selector")
+                .accessibilityHint("Switch between manual input and GPT-powered recommendations")
+                .accessibilityIdentifier("modePicker")
 
-                if selectedMode == .manual {
-                    CinemaScopeAIView() // Recommender view
-                } else {
-                    GPTChatView() // GPT prompt view
+                Group {
+                    if selectedMode == .manual {
+                        CinemaScopeAIView()
+                            .transition(.asymmetric(
+                                insertion: .move(edge: .leading).combined(with: .opacity),
+                                removal: .move(edge: .trailing).combined(with: .opacity)
+                            ))
+                    } else {
+                        GPTChatView()
+                            .transition(.asymmetric(
+                                insertion: .move(edge: .trailing).combined(with: .opacity),
+                                removal: .move(edge: .leading).combined(with: .opacity)
+                            ))
+                    }
                 }
+                .animation(.smooth(duration: 0.35), value: selectedMode)
             }
-            .navigationTitle("🎬 CinemaScopeAI")
+            .navigationTitle("CinemaScopeAI")
+            .navigationDestination(for: Recommendation.self) { movie in
+                CinemaScopeAIDetailView(movie: movie)
+            }
         }
     }
 }
@@ -32,31 +49,4 @@ enum InputMode: String, CaseIterable {
 
 #Preview {
     ViewModelSwitcherView()
-}
-
-
-
-struct ViewModelSwitcherView2: View {
-    @State private var selectedMode: InputMode = .manual
-
-    var body: some View {
-        NavigationView {
-            VStack {
-                Picker("Mode", selection: $selectedMode) {
-                    ForEach(InputMode.allCases, id: \.self) { mode in
-                        Text(mode.rawValue).tag(mode)
-                    }
-                }
-                .pickerStyle(SegmentedPickerStyle())
-                .padding()
-                
-                if selectedMode == .manual {
-                    GPTChatView()
-                } else {
-                    CinemaScopeAIView()
-                }
-            }
-            .navigationTitle("Akin")
-        }
-    }
 }

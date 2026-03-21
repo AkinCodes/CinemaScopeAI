@@ -1,13 +1,17 @@
 import Foundation
+import Observation
+import UIKit
 
 @MainActor
-class CinemaScopeAIViewModel: ObservableObject {
-    @Published var recommendations: [Recommendation] = []
-    @Published var isLoading = false
-    @Published var releaseYear: String = "2021"
-    @Published var durationText: String = ""
-    @Published var type: String = ""
-    @Published var rating: String = ""
+@Observable
+class CinemaScopeAIViewModel {
+    var recommendations: [Recommendation] = []
+    var isLoading = false
+    var errorMessage: String?
+    var releaseYear: String = "2021"
+    var durationText: String = ""
+    var type: String = ""
+    var rating: String = ""
 
     // Supported values
     let allowedTypes = ["Movie", "TV Show"]
@@ -17,15 +21,20 @@ class CinemaScopeAIViewModel: ObservableObject {
         "ALL", "7+", "13+", "16+", "18+", "M", "MA15+"
     ]
 
+    private let service: MovieRecommendationServiceProtocol
+    private var lastPayload: [String: Any]?
+
+    init(service: MovieRecommendationServiceProtocol = CinemaScopeAIService.shared) {
+        self.service = service
+    }
+
     func fetchRecommendations() {
         isLoading = true
+        errorMessage = nil
 
         // --- Sanitize Year ---
         let trimmedYear = releaseYear.trimmingCharacters(in: .whitespacesAndNewlines)
         let year = Int(trimmedYear) ?? 2000
-        if Int(trimmedYear) == nil {
-            print("⚠️ Invalid year input '\(releaseYear)'. Defaulting to 2000.")
-        }
 
         // --- Sanitize Duration ---
         let safeDuration = durationText.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -36,7 +45,6 @@ class CinemaScopeAIViewModel: ObservableObject {
         let matchedType = allowedTypes.first(where: {
             $0.lowercased().contains(cleanType.lowercased())
         }) ?? "Movie"
-
 
         // --- Sanitize Rating ---
         let cleanedRating = rating
@@ -55,14 +63,37 @@ class CinemaScopeAIViewModel: ObservableObject {
             "rating": matchedRating
         ]
 
-        print("🟢 Sending normalized request: \(payload)")
+        lastPayload = payload
 
-        // --- Send API Request ---
-        CinemaScopeAIService.shared.fetchRecommendations(with: payload) { [weak self] result in
-            DispatchQueue.main.async {
-                self?.recommendations = result ?? []
-                self?.isLoading = false
+        Task {
+            do {
+                let results = try await service.fetchRecommendations(with: payload)
+                self.recommendations = results
+                UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+            } catch {
+                self.errorMessage = error.localizedDescription
+                self.recommendations = []
+                UINotificationFeedbackGenerator().notificationOccurred(.error)
             }
+            self.isLoading = false
         }
+    }
+
+    func retry() {
+        guard lastPayload != nil else {
+            fetchRecommendations()
+            return
+        }
+        fetchRecommendations()
+    }
+
+    func reset() {
+        releaseYear = ""
+        durationText = ""
+        type = ""
+        rating = ""
+        recommendations = []
+        errorMessage = nil
+        lastPayload = nil
     }
 }

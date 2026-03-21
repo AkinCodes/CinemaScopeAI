@@ -1,14 +1,22 @@
-import Combine
+import Foundation
+import Observation
+import UIKit
 
 @MainActor
-class GPTChatViewModel: ObservableObject {
-    @Published var messages: [ChatMessage] = []
-    @Published var currentInput: String = ""
-    @Published var isLoading = false
-    @Published var errorMessage: String?
-    @Published var recommendations: [Recommendation] = []
+@Observable
+class GPTChatViewModel {
+    var messages: [ChatMessage] = []
+    var currentInput: String = ""
+    var isLoading = false
+    var errorMessage: String?
+    var recommendations: [Recommendation] = []
 
-    private let gptClient = GPTClient()
+    private let gptClient: GPTServiceProtocol
+    private var lastPrompt: String?
+
+    init(gptClient: GPTServiceProtocol = GPTClient()) {
+        self.gptClient = gptClient
+    }
 
     func sendMessage() async {
         let input = currentInput.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -18,23 +26,42 @@ class GPTChatViewModel: ObservableObject {
         messages.append(userMessage)
         currentInput = ""
         isLoading = true
+        errorMessage = nil
 
         let prompt = buildPrompt(from: input)
+        lastPrompt = prompt
 
         do {
             let response = try await gptClient.fetchRecommendations(prompt: prompt)
             self.recommendations = response.recommendations
-            self.errorMessage = nil
+            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
         } catch {
-            print("❌ GPT error: \(error)")
             self.errorMessage = error.localizedDescription
+            UINotificationFeedbackGenerator().notificationOccurred(.error)
+        }
+
+        isLoading = false
+    }
+
+    func retry() async {
+        guard let prompt = lastPrompt else { return }
+
+        isLoading = true
+        errorMessage = nil
+
+        do {
+            let response = try await gptClient.fetchRecommendations(prompt: prompt)
+            self.recommendations = response.recommendations
+            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+        } catch {
+            self.errorMessage = error.localizedDescription
+            UINotificationFeedbackGenerator().notificationOccurred(.error)
         }
 
         isLoading = false
     }
 
     private func buildPrompt(from input: String) -> String {
-        // keep the same prompt format you already wrote
         """
         You are a movie recommendation AI. Return only valid JSON in the following format:
 

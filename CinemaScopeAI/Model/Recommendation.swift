@@ -1,6 +1,6 @@
 import Foundation
 
-struct Recommendation: Identifiable, Codable {
+struct Recommendation: Identifiable, Codable, Hashable {
     var id: String { title + String(release_year) } 
     
     let title: String
